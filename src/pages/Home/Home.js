@@ -20,6 +20,14 @@ import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
 
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
+
 import { makeStyles } from '@material-ui/core/styles';
 
 import { getStories, getIdeas } from '../../helpers/storage';
@@ -62,15 +70,23 @@ function Home() {
 
   const [stories, setStories] = useState([]);
   const [ideas, setIdeas] = useState([]);
+  const [formTitle, setFormTitle] = useState('');
 
   const [showMenu, setShowMenu] = useState(null);
   const [tabValue, setTabValue] = useState(0);
+
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     setStories(getStories());
     setIdeas(getIdeas());
   }, [])
 
+  const handleDialogOpen = formTitle => {
+    setFormTitle(formTitle);
+    setDialogOpen(true);
+    setShowMenu(false);
+  }
 
   return (
     <Container maxWidth="lg" className={classes.root}>
@@ -94,8 +110,8 @@ function Home() {
             open={Boolean(showMenu)}
             onClose={() => setShowMenu(null)}
           >
-            <MenuItem>New Story</MenuItem>
-            <MenuItem>New Idea Topic</MenuItem>
+            <MenuItem onClick={() => handleDialogOpen('Story')}>New Story</MenuItem>
+            <MenuItem onClick={() => handleDialogOpen('Idea Topic')}>New Idea Topic</MenuItem>
           </Menu>
         </Grid>
       </Grid>
@@ -139,6 +155,29 @@ function Home() {
         </TabPanel>
 
       </Paper>
+
+      <Dialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        aria-labelledby="form-dialog"
+      >
+        <DialogTitle>New { formTitle }</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            label={formTitle}
+            type="text"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary">
+            Add
+          </Button>
+          <Button onClick={() => setDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </Container>
   )
