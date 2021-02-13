@@ -2,23 +2,12 @@ import React, { useState, useEffect } from 'react';
 
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-
-import Typography from '@material-ui/core/Typography';
-
-import Divider from '@material-ui/core/Divider';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import IconButton from '@material-ui/core/IconButton';
-import AddIcon from '@material-ui/icons/Add';
+import MenuIcon from '@material-ui/icons/Menu';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -28,9 +17,14 @@ import DialogContent from '@material-ui/core/DialogContent';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 
+import Typography from '@material-ui/core/Typography';
+
+import Listings from '../../components/Listings';
+import Text from '../../components/Text';
+
 import { makeStyles } from '@material-ui/core/styles';
 
-import { getStories, getIdeas } from '../../helpers/storage';
+import { getPageTitle, getPageType, getPageContent } from '../../helpers/storage';
 
 const useStyles = makeStyles({
   root:{
@@ -44,134 +38,90 @@ const useStyles = makeStyles({
   }
 });
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+function Home(props) {
+
+  const id = props.match.params.id || '0';
+  const title = props.match.params.title || '';
+
   const classes = useStyles();
 
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Container className={classes.bordered}>
-          <Typography>{children}</Typography>
-        </Container>
-      )}
-    </div>
-  );
-}
+  const [pageTitle, setPageTitle] = useState('');
+  const [pageType, setPageType] = useState('');
 
-function Home() {
-  const classes = useStyles();
+  const [pageNewTitle, setPageNewTitle] = useState('');
 
-  const [stories, setStories] = useState([]);
-  const [ideas, setIdeas] = useState([]);
-  const [formTitle, setFormTitle] = useState('');
-
-  const [showMenu, setShowMenu] = useState(null);
-  const [tabValue, setTabValue] = useState(0);
-
+  const [showMenu, setShowMenu] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  useEffect(() => {
-    setStories(getStories());
-    setIdeas(getIdeas());
-  }, [])
+  const [pageContent, setPageContent] = useState({});
 
-  const handleDialogOpen = formTitle => {
-    setFormTitle(formTitle);
+  useEffect(() => {
+    setPageTitle(getPageTitle(id));
+    setPageType(getPageType(id));
+    setPageContent(getPageContent(id));
+  }, [id])
+
+  const handleDialogOpen = () => {
+    setPageNewTitle(pageTitle);
     setDialogOpen(true);
     setShowMenu(false);
   }
 
+  const handleTitleEdit = () => {
+    setPageTitle(pageNewTitle);
+    setDialogOpen(false);
+  }
+
   return (
     <Container maxWidth="lg" className={classes.root}>
-
       <Grid container justify="space-between">
         <Grid item>
-          <Typography variant="h5">The Writer's Friend</Typography>
+          <Typography variant="h5">{ pageTitle }</Typography>
         </Grid>
-        <Grid item>
-          <IconButton
-            aria-controls="simple-menu"
-            aria-haspopup="true"
-            onClick={event => {setShowMenu(event.currentTarget)}}
-          >
-            <AddIcon />
-          </IconButton>
-          <Menu
-            id="simple-menu"
-            anchorEl={showMenu}
-            keepMounted
-            open={Boolean(showMenu)}
-            onClose={() => setShowMenu(null)}
-          >
-            <MenuItem onClick={() => handleDialogOpen('Story')}>New Story</MenuItem>
-            <MenuItem onClick={() => handleDialogOpen('Idea Topic')}>New Idea Topic</MenuItem>
-          </Menu>
-        </Grid>
+        { (id !== '0') && (
+            <Grid item>
+              <IconButton
+                aria-controls="simple-menu"
+                aria-haspopup="true"
+                onClick={event => setShowMenu(event.currentTarget)}
+              >
+                <MenuIcon fontSize="small" />
+              </IconButton>
+              <Menu
+                id="simple-menu"
+                anchorEl={showMenu}
+                keepMounted
+                open={Boolean(showMenu)}
+                onClose={() => setShowMenu(null)}
+              >
+                <MenuItem onClick={handleDialogOpen}>Edit Title</MenuItem>
+                <MenuItem onClick={() => setShowMenu(null)}>Delete Page</MenuItem>
+              </Menu>
+            </Grid>
+          )
+        }
       </Grid>
-
-      <Paper square>
-        <Tabs
-          value={tabValue}
-          indicatorColor="primary"
-          textColor="primary"
-          onChange={(event, newValue) => setTabValue(newValue)}
-          aria-label="disabled tabs example"
-        >
-          <Tab label="Stories" />
-          <Tab label="Ideas" />
-        </Tabs>
-
-        <TabPanel value={tabValue} index={0}>
-          <List>
-            { stories.map(story => (
-              <>
-                <ListItem key={story.id} button>
-                  <ListItemText primary={story.title} />
-                </ListItem>
-                <Divider />
-              </>
-            )) }
-          </List>
-        </TabPanel>
-
-        <TabPanel value={tabValue} index={1}>
-          <List>
-            { ideas.map(ideaTopic => (
-              <>
-                <ListItem key={ideaTopic.id} button>
-                  <ListItemText primary={ideaTopic.title} />
-                </ListItem>
-                <Divider />
-              </>
-            )) }
-          </List>
-        </TabPanel>
-
-      </Paper>
+      { (pageType === 'list') && (<Listings pageID={id} pageContent={pageContent} />)}
+      { (pageType === 'text') && (<Text pageContent={pageContent} />)}
 
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         aria-labelledby="form-dialog"
       >
-        <DialogTitle>New { formTitle }</DialogTitle>
+        <DialogTitle>Edit { (title !== '') && title[0].toUpperCase() + title.slice(1) } title</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
-            label={formTitle}
+            label="Title"
             type="text"
+            value={pageNewTitle}
+            onChange={event => setPageNewTitle(event.target.value)}
           />
         </DialogContent>
         <DialogActions>
-          <Button color="primary">
-            Add
+          <Button onClick={handleTitleEdit} color="primary">
+            OK
           </Button>
           <Button onClick={() => setDialogOpen(false)} color="primary">
             Cancel
