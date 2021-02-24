@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
 
 const Home = lazy(() => import('./pages/Home'));
 
@@ -8,9 +8,9 @@ const Routes = () => {
     <Suspense fallback={<p>Loading</p>}>
       <Router>
         <Switch>
-          <Route exact path="/:title/:id" component={Home} />
-          <Route exact path="/" component={Home} />
-          <Route path="/" component={() => (<p>404</p>)} />
+          <Route exact path="/ui/:id" component={Home} />
+          <Route exact path="/ui" component={Home} />
+          <Route exact path="/"><Redirect to="/ui" /></Route>
         </Switch>
       </Router>
     </Suspense>

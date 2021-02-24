@@ -21,14 +21,22 @@ const useStyles = makeStyles({
   }
 });
 
-function Text({ pageContent }){
+function Text({ pageContent, setPageContent, updatePageText }){
 
   const classes = useStyles();
-
-  const [content, setContent] = useState(pageContent.text);
   const [editMode, setEditMode] = useState(false);
 
+  const handleEditorChange = (content, editor) => {
+    setPageContent({
+      text: content
+    })
+  }
+
   const editHandler = event => {
+    if (editMode){
+      updatePageText();
+    }
+
     setEditMode(!editMode);
   }
 
@@ -48,18 +56,18 @@ function Text({ pageContent }){
         />
       </Paper>
 
-      { (content === '') && !editMode && 'Edit to add content' }
+      { (pageContent.text === '' || pageContent.text === undefined) && !editMode && 'Edit to add content' }
 
       { !editMode && (
         <Paper elevation={0} dangerouslySetInnerHTML={{
-          __html: content
+          __html: pageContent.text
         }}></Paper>
       ) }
 
       { editMode && (
         <Editor
           apiKey='opbkrxx8zzedh49lu3wzz3zwg7o3dv8d2z0x8cxnlm1sv4fj'
-          initialValue={content}
+          initialValue={pageContent.text}
           init={{
             height: 600,
             menubar: true,
@@ -70,7 +78,7 @@ function Text({ pageContent }){
               'insertdatetime media table paste code help wordcount'
             ]
           }}
-          onEditorChange={(content, editor) => {setContent(content)}}
+          onEditorChange={handleEditorChange}
         />
       ) }
     </Paper>

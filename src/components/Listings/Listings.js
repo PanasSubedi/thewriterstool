@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { useHistory } from 'react-router-dom';
 
 import Container from '@material-ui/core/Container';
-import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 
 import Tabs from '@material-ui/core/Tabs';
@@ -12,17 +11,15 @@ import Tab from '@material-ui/core/Tab';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-
-import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormLabel from '@material-ui/core/FormLabel';
@@ -35,11 +32,9 @@ import Button from '@material-ui/core/Button';
 
 import { makeStyles } from '@material-ui/core/styles';
 
-import { getTabs } from '../../helpers/storage';
-
 const useStyles = makeStyles({
   root:{
-    marginTop: '20px',
+    marginTop: '20px'
   },
   bordered: {
     border: '1px solid #eee',
@@ -70,87 +65,80 @@ function TabPanel(props) {
   );
 }
 
-function Listings({ pageID, pageContent }) {
+function Listings({ pageContent, tabs, addNewPage }) {
 
   const classes = useStyles();
   const history = useHistory();
 
-  const [tabs, setTabs] = useState([]);
   const [tabValue, setTabValue] = useState(0);
 
-  const [showMenu, setShowMenu] = useState(null);
-
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
 
-  const [newTabType, setNewTabType] = useState('text');
+  const [newPageType, setNewPageType] = useState('text');
+  const [newPageTitle, setNewPageTitle] = useState('');
+  const [currentTabID, setCurrentTabID] = useState(0);
 
-  useEffect(() => {
-    setTabs(getTabs(pageID));
-  }, [pageID]);
+  const handleAdd = () => {
+    setNewPageTitle('');
+    setAddDialogOpen(false);
 
-  const handleDialogOpen = formTitle => {
-    setFormTitle(formTitle);
-    setDialogOpen(true);
-    setShowMenu(false);
+    addNewPage(currentTabID, newPageTitle, newPageType);
+
   }
 
-  const getChildURL = (tabTitle, listItemID) => {
-    return '/'+tabTitle.replace(' ', '').toLowerCase()+'/'+listItemID
+  const closeDialog = () => {
+    setNewPageTitle('');
+    setAddDialogOpen(false);
+  }
+
+  const handleAddDialogOpen = (formTitle, tabID) => {
+    setFormTitle(formTitle);
+    setCurrentTabID(tabID);
+    setAddDialogOpen(true);
+  }
+
+  const goToPage = pageID => {
+    history.push('/ui/'+pageID);
   }
 
   return (
     <>
     <Paper square className={classes.root}>
-      <Grid container justify="space-between">
-        <Grid item>
-          <Tabs
-            value={tabValue}
-            indicatorColor="primary"
-            textColor="primary"
-            onChange={(event, newValue) => setTabValue(newValue)}
-            aria-label="disabled tabs example"
-          >
-            { tabs.map(tab => (
-              <Tab key={tab.id} label={ tab.title }/>
-            )) }
-          </Tabs>
-        </Grid>
-
-        <Grid item>
-          <IconButton
-            aria-controls="simple-menu"
-            aria-haspopup="true"
-            onClick={event => {setShowMenu(event.currentTarget)}}
-          >
-            <AddIcon />
-          </IconButton>
-          <Menu
-            id="simple-menu"
-            anchorEl={showMenu}
-            keepMounted
-            open={Boolean(showMenu)}
-            onClose={() => setShowMenu(null)}
-          >
-            {
-              tabs.map(tab => (
-                <MenuItem key={tab.id} onClick={() => handleDialogOpen(tab.singular)}>New {tab.singular}</MenuItem>
-              ))
-            }
-            <MenuItem onClick={() => handleDialogOpen('Tab')}>New Tab</MenuItem>
-          </Menu>
-        </Grid>
-      </Grid>
+      <Tabs
+        value={tabValue}
+        indicatorColor="primary"
+        textColor="primary"
+        variant="scrollable"
+        scrollButtons="auto"
+        onChange={(event, newValue) => setTabValue(newValue)}
+      >
+        { tabs.map(tab => (
+          <Tab key={tab._id} label={ tab.title }/>
+        )) }
+      </Tabs>
 
       {
         tabs.map((tab, index) => (
-          <TabPanel key={tab.id} value={tabValue} index={index}>
+          <TabPanel key={tab._id} value={tabValue} index={index}>
             <List>
-              { pageContent[tab.title.replace(' ', '').toLowerCase()].map(listValues => (
-                <ListItem divider={true} key={listValues.id} button>
-                  <ListItemText onClick={() => history.push(getChildURL(tab.singular, listValues.id))} primary={listValues.title} />
-                </ListItem>
-              )) }
+              {
+                pageContent[tab._id] !== undefined &&
+                pageContent[tab._id].map(listValues => (
+                  <ListItem divider={true} key={listValues.id} button>
+                    <ListItemText onClick={() => goToPage(listValues.id)} primary={listValues.title} />
+                  </ListItem>
+                ))
+              }
+              <ListItem
+                divider={true}
+                button
+                onClick={() => handleAddDialogOpen(tab.singular, tab._id)}
+              >
+                <ListItemIcon>
+                  <AddIcon />
+                </ListItemIcon>
+              </ListItem>
             </List>
           </TabPanel>
         ))
@@ -159,36 +147,49 @@ function Listings({ pageID, pageContent }) {
     </Paper>
 
     <Dialog
-      open={dialogOpen}
-      onClose={() => setDialogOpen(false)}
+      open={addDialogOpen}
+      onClose={closeDialog}
       aria-labelledby="form-dialog"
     >
       <DialogTitle>New { formTitle }</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
+          fullWidth
           label="Title"
           type="text"
+          value={newPageTitle}
+          onChange={event => setNewPageTitle(event.target.value)}
         />
 
-        { (formTitle === 'Tab') && (<><br /><br /><br />
+        <br /><br /><br />
         <FormLabel component="legend">Tab Type</FormLabel>
         <RadioGroup
           aria-label="tab-type"
           name="tab-type"
-          value={newTabType}
-          onChange={event => setNewTabType(event.target.value)}
+          value={newPageType}
+          onChange={event => setNewPageType(event.target.value)}
         >
           <FormControlLabel value="text" control={<Radio color="primary" />} label="Text" />
+          <DialogContentText>
+            If you want to add text-based content. For example, if you want to write a chapter, summary, or your musings.
+          </DialogContentText>
+
           <FormControlLabel value="list" control={<Radio color="primary" />} label="List" />
-        </RadioGroup></>)}
+          <DialogContentText>
+            If you want to add list-based content with tabs, just like this page.
+          </DialogContentText>
+        </RadioGroup>
 
       </DialogContent>
       <DialogActions>
-        <Button color="primary">
+        <Button
+          color="primary"
+          onClick={handleAdd}
+        >
           Add
         </Button>
-        <Button onClick={() => setDialogOpen(false)} color="primary">
+        <Button onClick={closeDialog} color="primary">
           Cancel
         </Button>
       </DialogActions>
