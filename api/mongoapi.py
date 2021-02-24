@@ -1,10 +1,12 @@
 from pymongo import MongoClient
 from flask import json
 
+from writersfriend import DATABASE_HOST
+
 class MongoAPI:
 
     def __init__(self, database, collection):
-        self.client = MongoClient('mongodb://localhost:27017/')
+        self.client = MongoClient(DATABASE_HOST)
 
         self.cursor = self.client[database]
         self.collection = self.cursor[collection]

@@ -2,7 +2,7 @@ from flask import request
 
 from respond import respond
 
-from writersfriend import app
+from writersfriend import app, DATABASE
 from mongoapi import MongoAPI
 
 @app.route('/api/pages', methods=['DELETE'])
@@ -11,7 +11,7 @@ def delete_page():
     if data is None or data == {}:
         return respond({"error": "Please provide delete filter"}, 400)
 
-    db = MongoAPI('writersFriendDB', 'pages')
+    db = MongoAPI(DATABASE, 'pages')
     response = db.delete(data['filter'])
     return respond(response, 200)
 
@@ -25,14 +25,14 @@ def update_page_text(id):
     if 'page_id' not in data or 'text' not in data:
         return respond({'error': 'Please provide page_id and text'}, 400)
 
-    db = MongoAPI('writersFriendDB', 'pages')
+    db = MongoAPI(DATABASE, 'pages')
     if not db.exists(id):
         return respond({'error': 'The page ID does not exist'}, 400)
 
     page = db.read_one(id)
     if page['type'] != 'text':
         return respond({'error': 'The provided page is not a text-based page.'}, 400)
-        
+
     response = db.update({'_id': int(id)}, {'text': data['text']})
     return respond(response, 200)
 
@@ -43,7 +43,7 @@ def edit_page():
     if data is None or data == {}:
         return respond({'Error': 'Please provide the data to enter'}, 400)
 
-    db = MongoAPI('writersFriendDB', 'pages')
+    db = MongoAPI(DATABASE, 'pages')
     response = db.update(data['filter'], data['data'])
 
     return respond(response, 200)
@@ -57,7 +57,7 @@ def add_page():
     if 'title' not in data or 'tab_id' not in data or 'type' not in data:
         return respond({'Error': 'Please provide the title, tab_id, and type for the page'}, 400)
 
-    db = MongoAPI('writersFriendDB', 'pages')
+    db = MongoAPI(DATABASE, 'pages')
     response = db.write({
         'title': data['title'],
         'tab_id': int(data['tab_id']),
@@ -67,7 +67,7 @@ def add_page():
 
 @app.route('/api/pages/<id>/content', methods=['GET'])
 def get_page_content(id):
-    db = MongoAPI('writersFriendDB', 'pages')
+    db = MongoAPI(DATABASE, 'pages')
 
     page = db.read_one(id)
 
@@ -78,7 +78,7 @@ def get_page_content(id):
 
     if page['type'] == 'list':
         # gets content within the tabs
-        tabsDB = MongoAPI('writersFriendDB', 'tabs')
+        tabsDB = MongoAPI(DATABASE, 'tabs')
         tabs = tabsDB.read({'page_id': int(id)})
 
         for tab in tabs:
@@ -96,19 +96,19 @@ def get_page_content(id):
 
 @app.route('/api/pages/<id>/tabs', methods=['GET'])
 def get_page_tabs(id):
-    db = MongoAPI('writersFriendDB', 'tabs')
+    db = MongoAPI(DATABASE, 'tabs')
     response = db.read({'page_id': int(id)})
 
     return respond(response, 200)
 
 @app.route('/api/pages/<id>', methods=['GET'])
 def get_page(id):
-    db = MongoAPI('writersFriendDB', 'pages')
+    db = MongoAPI(DATABASE, 'pages')
     response = db.read_one(id)
     return respond(response, 200)
 
 @app.route('/api/pages', methods=['GET'])
 def get_pages():
-    db = MongoAPI('writersFriendDB', 'pages')
+    db = MongoAPI(DATABASE, 'pages')
     response = db.read()
     return respond(response, 200)
