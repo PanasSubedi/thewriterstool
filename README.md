@@ -1,70 +1,107 @@
-# Getting Started with Create React App
+# The Writing Tool (final name undecided)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+1. [Introduction](#introduction)
+2. [Getting Started](#getting-started)
+3. [Usage](#usage)
+4. [Screenshots](#screenshots)
+5. [Dependencies](#dependencies)
+6. [Technical Notes](#technical-notes)
 
-## Available Scripts
+## Introduction
 
-In the project directory, you can run:
+The Writing Tool is an application that helps you organize your fictional content. With the app, you can record your concepts and ideas, organize stories, characters, outlines, moments of foreshadowing, backstories, and many more from the same place.
 
-### `yarn start`
+You can use it as a personal wiki of all your writing projects by adding links from one page to any other.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Getting Started
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+1. Clone the repo.
 
-### `yarn test`
+  `git clone`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Go to the project directory and install all the front-end dependencies using:
 
-### `yarn build`
+  `yarn`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Run the front-end using:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+  `yarn start`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+4. Change the directory to `/api` and install all the back-end dependencies using:
 
-### `yarn eject`
+  `pip3 install -r requirements.txt`
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+5. Run the back-end using:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  `python3 writersfriend.py`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+6. To connect to the Mongo database, Open `/api/writersfriend.py` and:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+  - Change the value of DATABASE to your database name.
 
-## Learn More
+  - Change the value of DATABASE_HOST to your database host.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+7. Run your database server
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The app runs by default on http://localhost:3000
 
-### Code Splitting
+## Usage
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+The home page opens with two default tabs, **Stories** and **Ideas**.
 
-### Analyzing the Bundle Size
+1. From the home page, you can add new **tabs**.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+2. On each tab, you can add new **pages**.
 
-### Making a Progressive Web App
+3. While adding a **page**, you can select either **text** or **list**.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+  - On a **List** page, you can add **tabs** and **pages** same as the home page.
 
-### Advanced Configuration
+  - On a **Text** page, you can write chapters, character descriptions, or any other text-based content.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+4. You can also delete and edit pages and their titles.
 
-### Deployment
+## Screenshots
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Dependencies
 
-### `yarn build` fails to minify
+### Tools
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. [Yarn](https://yarnpkg.com/)
+2. [Python3+](https://www.python.org/downloads/)
+3. [Pip](https://pip.pypa.io/en/stable/)
+4. [MongoDB](https://www.mongodb.com/)
+
+### Front-end
+
+1. @material-ui/core ^4.11.3
+2. @material-ui/icons ^4.11.2
+3. @tinymce/tinymce-react ^3.10.1
+4. react ^17.0.1
+5. react-dom ^17.0.1
+6. react-router-dom ^5.2.0
+7. web-vitals ^1.0.1
+
+### Back-end
+
+1. certifi==2020.12.5
+2. chardet==4.0.0
+3. click==7.1.2
+4. colorama==0.4.4
+5. Flask==1.1.2
+6. httpie==2.4.0
+7. idna==2.10
+8. itsdangerous==1.1.0
+9. Jinja2==2.11.3
+10. MarkupSafe==1.1.1
+11. Pygments==2.8.0
+12. pymongo==3.11.3
+13. PySocks==1.7.1
+14. requests==2.25.1
+15. requests-toolbelt==0.9.1
+16. urllib3==1.26.3
+17. Werkzeug==1.0.1
+
+## Technical Notes
+
+1. Linking content between articles coming in the next version.
