@@ -12,8 +12,8 @@ class MongoAPI:
         self.collection = self.cursor[collection]
         self.collection_name = collection
 
-    def exists(self, id):
-        return self.collection.count_documents({'_id': int(id)}) > 0
+    def exists(self, filter):
+        return self.collection.count_documents(filter) > 0
 
     def read_one(self, id):
         if self.collection.count_documents({'_id': int(id)}) < 1:
