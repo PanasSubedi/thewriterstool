@@ -4,6 +4,9 @@ import { useHistory } from 'react-router-dom';
 
 import Container from '@material-ui/core/Container';
 import Paper from '@material-ui/core/Paper';
+import Grid from '@material-ui/core/Grid';
+
+import Typography from '@material-ui/core/Typography';
 
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
@@ -13,6 +16,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 
+import CloseIcon from '@material-ui/icons/Close';
 import AddIcon from '@material-ui/icons/Add';
 
 import Dialog from '@material-ui/core/Dialog';
@@ -65,7 +69,7 @@ function TabPanel(props) {
   );
 }
 
-function Listings({ pageContent, tabs, addNewPage }) {
+function Listings({ pageContent, tabs, addNewPage, handleTabDelete }) {
 
   const classes = useStyles();
   const history = useHistory();
@@ -114,7 +118,26 @@ function Listings({ pageContent, tabs, addNewPage }) {
         onChange={(event, newValue) => setTabValue(newValue)}
       >
         { tabs.map(tab => (
-          <Tab key={tab._id} label={ tab.title }/>
+          <Tab
+            key={tab._id}
+            label={
+              (
+                <Grid container justify="space-between">
+                  <Grid item>
+                    <Typography>
+                      { tab.title }
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <CloseIcon
+                      fontSize="small"
+                      onClick={event => handleTabDelete(event, tab._id)}
+                    />
+                  </Grid>
+                </Grid>
+              )
+            }
+          />
         )) }
       </Tabs>
 

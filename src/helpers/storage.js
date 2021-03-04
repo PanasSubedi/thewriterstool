@@ -1,11 +1,58 @@
-const storePageText = (pageID, text) => {
-  return fetch('/api/pages/' + pageID + '/text', {
+const modifyTabName = (tabID, newTitle) => {
+  return fetch('/api/tabs/'+tabID, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      'page_id': pageID,
+      'title': newTitle
+    })
+  }).then(
+    response => {
+      return response.ok
+    }
+  )
+}
+
+const deleteTab = tabID => {
+  return fetch('/api/tabs/'+tabID, {
+    method: 'DELETE',
+  }).then(
+    response => {
+      return response.ok
+    }
+  )
+}
+
+const deletePage = pageID => {
+  return fetch('/api/pages/'+pageID, {
+    method: 'DELETE',
+  }).then(
+    response => {
+      return response.ok
+    }
+  )
+}
+
+const editPageTitle = (pageID, newTitle) => {
+  return fetch('/api/pages/' + pageID, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      'title': newTitle
+    })
+  })
+}
+
+const storePageText = (pageID, text) => {
+  return fetch('/api/pages/' + pageID, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
       'text': text
     })
   })
@@ -90,4 +137,7 @@ const getPageContent = pageID => {
 }
 
 
-export { getPageData, getPageTabs, getPageContent, storeNewTab, storeNewPage, storePageText };
+export { getPageData, getPageTabs, getPageContent,
+          storeNewTab, storeNewPage, storePageText,
+          editPageTitle, deletePage, deleteTab,
+          modifyTabName };

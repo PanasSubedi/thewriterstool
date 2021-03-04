@@ -29,9 +29,10 @@ NON_MODIFIABLE = {
     'tabs': []
 }
 
+existence_check = namedtuple('ExistenceCheck', ['collection', 'field_name'])
 # collection to search the data in
 # field_name in which the data is stored
-existence_check = namedtuple('ExistenceCheck', ['collection', 'field_name'])
+
 EXISTENCE_CHECKS_BEFORE_DELETE = {
     'pages': [existence_check('tabs', 'page_id')],
     'tabs': [existence_check('pages', 'tab_id')]
@@ -80,7 +81,7 @@ def update_object(collection, id):
     content_to_update = {}
     for field_name in UPDATEABLE_FIELDS[collection]:
         if field_name in data:
-            content_to_update[field_name] = int(data[field_name]) if data[field_name].isdigit() else data[field_name]
+            content_to_update[field_name] = int(data[field_name]) if type(data[field_name]) == str and data[field_name].isdigit() else data[field_name]
 
     if len(content_to_update) > 0:
         response = db.update({'_id': id}, content_to_update)
@@ -103,11 +104,11 @@ def add_object(collection):
         if field_name not in data:
             return respond({'error': 'Please provide {}'.format(field_name)}, 400)
         else:
-            content_to_add[field_name] = int(data[field_name]) if data[field_name].isdigit() else data[field_name]
+            content_to_add[field_name] = int(data[field_name]) if type(data[field_name]) == str and data[field_name].isdigit() else data[field_name]
 
     for field_name in WRITEABLE_FIELDS[collection]:
         if field_name in data:
-            content_to_add[field_name] = int(data[field_name]) if data[field_name].isdigit() else data[field_name]
+            content_to_add[field_name] = int(data[field_name]) if type(data[field_name]) == str and data[field_name].isdigit() else data[field_name]
 
     db = MongoAPI(DATABASE, collection)
     response = db.write(content_to_add)

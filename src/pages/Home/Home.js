@@ -9,6 +9,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 
 import IconButton from '@material-ui/core/IconButton';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import MenuIcon from '@material-ui/icons/Menu';
 
 import Dialog from '@material-ui/core/Dialog';
@@ -17,7 +18,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 
+import InputLabel from '@material-ui/core/InputLabel';
 import TextField from '@material-ui/core/TextField';
+import Select from '@material-ui/core/Select';
 import Button from '@material-ui/core/Button';
 
 import Typography from '@material-ui/core/Typography';
@@ -25,9 +28,14 @@ import Typography from '@material-ui/core/Typography';
 import Listings from '../../components/Listings';
 import Text from '../../components/Text';
 
+import Snackbar from '@material-ui/core/Snackbar';
+
 import { makeStyles } from '@material-ui/core/styles';
 
-import { getPageData, getPageTabs, getPageContent, storeNewTab, storeNewPage, storePageText } from '../../helpers/storage';
+import { getPageData, getPageTabs, getPageContent,
+          storeNewTab, storeNewPage, storePageText,
+          editPageTitle, deletePage, deleteTab,
+          modifyTabName } from '../../helpers/storage';
 
 const useStyles = makeStyles({
   root:{
@@ -58,10 +66,17 @@ function Home(props) {
   const [newTabSingularName, setNewTabSingularName] = useState('');
   const [newTabName, setNewTabName] = useState('');
 
+  const [renameTabsDialogOpen, setRenameTabsDialogOpen] = useState(false);
+  const [renameTabsSelectedTab, setRenameTabsSelectedTab] = useState(0);
+  const [renameTabsText, setRenameTabsText] = useState('');
+
   const [editTitleDialogOpen, setEditTitleDialogOpen] = useState(false);
   const [pageNewTitle, setPageNewTitle] = useState('');
 
   const [pageContent, setPageContent] = useState({});
+
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   useEffect(() => {
     getPageData(pageID).then(
@@ -78,7 +93,7 @@ function Home(props) {
             () => {
               alert('Error connecting to the API')
             }
-          );;
+          );
         }
       }
     ).catch(
@@ -104,6 +119,40 @@ function Home(props) {
     const id = path.length === 2 ? '0' : path[2]
     setPageID(id);
   });
+
+  const renameTab = () => {
+    modifyTabName(renameTabsSelectedTab, renameTabsText).then(
+      result => {
+        if (result){
+          setTabs(prevTabs => {
+            let newTabs = [];
+            prevTabs.forEach(tab => {
+              if (tab._id === renameTabsSelectedTab){
+                let newTab = tab;
+                newTab.title = renameTabsText;
+                newTabs.push(newTab);
+              }
+              else {
+                newTabs.push(tab);
+              }
+            })
+            return newTabs;
+          })
+        }
+        else {
+          setSnackbarMessage('Failed to edit tab name');
+          setSnackbarOpen(true);
+        }
+      }
+    )
+
+    setRenameTabsDialogOpen(false);
+  }
+
+  const handleRenameTabSelectChange = event => {
+    setRenameTabsSelectedTab(event.target.value);
+    setRenameTabsText(tabs.filter(tab => tab._id === event.target.value)[0].title);
+  }
 
   const updatePageText = () => {
     storePageText(pageID, pageContent.text)
@@ -147,6 +196,46 @@ function Home(props) {
     setNewTabDialogOpen(false);
   }
 
+  const handleTabDelete = (event, tabID) => {
+    event.stopPropagation()
+
+    deleteTab(tabID).then(
+      result => {
+        if (result){
+          setTabs(prevTabs => {
+            return prevTabs.filter(tab => tab._id !== tabID)
+          })
+        }
+        else {
+          setSnackbarMessage('Please empty this tab first')
+          setSnackbarOpen(true)
+        }
+      }
+    )
+  }
+
+  const handleDeletePage = () => {
+    deletePage(pageID).then(
+      result => {
+        if (result){
+          history.goBack()
+        }
+        else {
+          setSnackbarMessage('Please empty this page first')
+          setSnackbarOpen(true);
+        }
+      }
+    )
+    setShowMenu(false);
+  }
+
+  const handleRenameTabsDialogOpen = () => {
+    setRenameTabsSelectedTab(tabs[0]._id);
+    setRenameTabsText(tabs[0].title);
+    setRenameTabsDialogOpen(true);
+    setShowMenu(false);
+  }
+
   const handleNewTabDialogOpen = () => {
     setNewTabName('');
     setNewTabSingularName('');
@@ -161,13 +250,29 @@ function Home(props) {
   }
 
   const handleTitleEdit = () => {
-    setPageTitle(pageNewTitle);
+    editPageTitle(pageID, pageNewTitle).then(
+      () => setPageTitle(pageNewTitle)
+    ).catch(
+      () => alert('Cannot connect to API')
+    )
     setEditTitleDialogOpen(false);
   }
 
   return (
     <Container maxWidth="lg" className={classes.root}>
       <Grid container justify="space-between">
+
+        <Grid item>
+          { (pageID !== '0') && (
+            <IconButton
+              aria-controls="back-button"
+              onClick={() => { history.goBack() }}
+            >
+              <ArrowBackIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Grid>
+
         <Grid item>
           <Typography variant="h5">{ pageTitle }</Typography>
         </Grid>
@@ -184,7 +289,7 @@ function Home(props) {
       </Grid>
 
 
-      { (pageType === 'list') && (<Listings pageContent={pageContent} tabs={tabs} addNewPage={addNewPage} />)}
+      { (pageType === 'list') && (<Listings pageContent={pageContent} tabs={tabs} addNewPage={addNewPage} handleTabDelete={handleTabDelete} />)}
       { (pageType === 'text') && (<Text pageContent={pageContent} setPageContent={setPageContent} updatePageText={updatePageText} />)}
 
       <Menu
@@ -195,9 +300,13 @@ function Home(props) {
         onClose={() => setShowMenu(null)}
       >
         { pageID !== '0' && (<MenuItem onClick={handleEditTitleDialogOpen}>Edit Title</MenuItem>) }
-        { pageID !== '0' && (<MenuItem onClick={() => setShowMenu(null)}>Delete Page</MenuItem>) }
+        { pageID !== '0' && (<MenuItem onClick={handleDeletePage}>Delete Page</MenuItem>) }
         { pageType === 'list' && (
-          <MenuItem onClick={handleNewTabDialogOpen}>New Tab</MenuItem>
+            <MenuItem onClick={handleNewTabDialogOpen}>New Tab</MenuItem>
+        ) }
+
+        { (pageType === 'list') && (tabs.length > 0) && (
+            <MenuItem onClick={handleRenameTabsDialogOpen}>Rename Tabs</MenuItem>
         ) }
       </Menu>
 
@@ -241,6 +350,50 @@ function Home(props) {
         </DialogActions>
       </Dialog>
 
+      <Dialog
+        open={renameTabsDialogOpen}
+        onClose={() => setRenameTabsDialogOpen(false)}
+        aria-labelledby="form-dialog"
+      >
+        <DialogTitle>Rename Tabs</DialogTitle>
+        <DialogContent>
+
+          <InputLabel shrink={true} id="select-tab">Tab</InputLabel>
+          <Select
+            fullWidth
+            labelId="select-tab"
+            value={renameTabsSelectedTab}
+            onChange={handleRenameTabSelectChange}
+          >
+            { tabs.map(tab => (
+              <MenuItem key={tab._id} value={tab._id}>{tab.title}</MenuItem>
+            )) }
+          </Select><br /><br />
+
+          <TextField
+            fullWidth
+            label="New Name"
+            type="text"
+            value={renameTabsText}
+            onChange={event => setRenameTabsText(event.target.value)}
+          />
+
+          <DialogContentText>
+            Provide the new name for the tab.
+          </DialogContentText>
+
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={renameTab} color="primary">
+            Rename
+          </Button>
+          <Button onClick={() => setRenameTabsDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
+
 
 
 
@@ -269,6 +422,13 @@ function Home(props) {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+      />
 
     </Container>
   )
