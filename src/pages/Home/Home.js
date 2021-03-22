@@ -78,15 +78,33 @@ function Home(props) {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
+  const [reloadButton, showReloadButton] = useState(false);
+
   useEffect(() => {
     getPageData(pageID).then(
       data => {
+
         setPageTitle(data.title)
         setPageType(data.type)
+
+        if (pageID === '0' && data.title === undefined){
+          showReloadButton(true);
+        }
+
+        if (pageID !== '0') {
+          document.title = `${data.title} - The Writer's Tool`
+        }
+        else {
+          document.title = data.title
+        }
 
         if(data.type === 'list'){
           getPageTabs(pageID).then(
             data => {
+              if (pageID === '0' && data.length < 2){
+                showReloadButton(true);
+              }
+
               setTabs(data);
             }
           ).catch(
@@ -207,7 +225,7 @@ function Home(props) {
           })
         }
         else {
-          setSnackbarMessage('Please empty this tab first')
+          setSnackbarMessage('Tab cannot be deleted. Either it is not empty, or it is a non-modifiable tab.')
           setSnackbarOpen(true)
         }
       }
@@ -274,7 +292,11 @@ function Home(props) {
         </Grid>
 
         <Grid item>
-          <Typography variant="h5">{ pageTitle }</Typography>
+          { !reloadButton && (<Typography variant="h5">{ pageTitle }</Typography>) }
+          { reloadButton && (<>
+              <Typography>Initializing database...</Typography>
+              <Button onClick={() => {window.location.reload()}}>reload page</Button>
+            </>)}
         </Grid>
 
         <Grid item>

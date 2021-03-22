@@ -1,6 +1,6 @@
 from respond import respond
 
-from writersfriend import app, DATABASE
+from thewriterstool import app, DATABASE
 from mongoapi import MongoAPI
 
 @app.route('/api/pages/<id>/content', methods=['GET'])

@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from flask import json
 
-from writersfriend import DATABASE_HOST
+from thewriterstool import DATABASE_HOST
 
 class MongoAPI:
 
@@ -25,6 +25,9 @@ class MongoAPI:
         documents = self.collection.find(filter)
         output = [{item: data[item] for item in data} for data in documents]
         return output
+
+    def write_raw(self, document):
+        self.collection.insert_one(document)
 
     def write(self, document):
 

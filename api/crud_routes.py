@@ -1,7 +1,7 @@
 from flask import request
 from respond import respond
 
-from writersfriend import app, DATABASE
+from thewriterstool import app, DATABASE
 from mongoapi import MongoAPI
 
 from collections import namedtuple
@@ -26,7 +26,7 @@ WRITEABLE_FIELDS = {
 
 NON_MODIFIABLE = {
     'pages': [0],
-    'tabs': []
+    'tabs': [1, 2]
 }
 
 existence_check = namedtuple('ExistenceCheck', ['collection', 'field_name'])
