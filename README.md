@@ -1,4 +1,4 @@
-# The Writing Tool (final name undecided)
+# The Writer's Tool
 
 1. [Introduction](#introduction)
 2. [Getting Started](#getting-started)
@@ -33,9 +33,9 @@ You can use it as a personal wiki of all your writing projects by adding links f
 
 5. Run the back-end using:
 
-  `python3 writersfriend.py`
+  `python3 thewriterstool.py`
 
-6. To connect to the Mongo database, Open `/api/writersfriend.py` and:
+6. To connect to the Mongo database, Open `/api/thewriterstool.py` and:
 
   - Change the value of DATABASE to your database name.
 
