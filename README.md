@@ -63,6 +63,22 @@ The home page opens with two default tabs, **Stories** and **Ideas**.
 
 ## Screenshots
 
+1. Home page
+
+![Home Page](screenshots/home_page.png)
+
+2. Story
+
+![Story](screenshots/story_page.png)
+
+3. Chapter
+
+![Chapter](screenshots/chapter.png)
+
+4. Chapter edit
+
+![Chapter edit](screenshots/chapter_edit.png)
+
 ## Dependencies
 
 ### Tools
