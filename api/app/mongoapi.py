@@ -1,14 +1,16 @@
 from pymongo import MongoClient
 from flask import json
 
-from thewriterstool import DATABASE_HOST
+from app import app
+DATABASE_HOST = app.config['DATABASE_HOST']
+DATABASE = app.config['DATABASE']
 
 class MongoAPI:
 
-    def __init__(self, database, collection):
+    def __init__(self, collection):
         self.client = MongoClient(DATABASE_HOST)
 
-        self.cursor = self.client[database]
+        self.cursor = self.client[DATABASE]
         self.collection = self.cursor[collection]
         self.collection_name = collection
 
@@ -21,10 +23,21 @@ class MongoAPI:
         else:
             return self.collection.find({'_id': int(id)})[0]
 
-    def read(self, filter=None):
-        documents = self.collection.find(filter)
+    def read(self, page=1, per_page=10, all_items=False, filter=None, sort=None):
+
+        total = self.collection.find(filter).count()
+
+        if all_items:
+            documents = self.collection.find(filter)
+        else:
+
+            offset = (page-1)*per_page
+            documents = self.collection.find(filter).skip(offset).limit(per_page)
+            if sort is not None:
+                documents = documents.sort(*sort)
+
         output = [{item: data[item] for item in data} for data in documents]
-        return output
+        return (total, output)
 
     def write_raw(self, document):
         self.collection.insert_one(document)
@@ -43,7 +56,7 @@ class MongoAPI:
         document['_id'] = get_next_id(self.cursor, self.collection_name)
         response = self.collection.insert_one(document)
         output = {
-            'status': 'Successfully Inserted',
+            'status': True,
             '_id': str(response.inserted_id)
         }
         return output
