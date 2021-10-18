@@ -30,6 +30,9 @@ import Text from '../../components/Text';
 
 import Snackbar from '@material-ui/core/Snackbar';
 
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+
 import { makeStyles } from '@material-ui/core/styles';
 
 import { getPageData, getPageTabs, getPageContent,
@@ -80,7 +83,11 @@ function Home(props) {
 
   const [reloadButton, showReloadButton] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
+
+    setLoading(true);
     getPageData(pageID).then(
       data => {
 
@@ -105,10 +112,12 @@ function Home(props) {
                 showReloadButton(true);
               }
 
+              setLoading(false);
               setTabs(data);
             }
           ).catch(
             () => {
+              setLoading(false);
               alert('Error connecting to the API')
             }
           );
@@ -116,6 +125,7 @@ function Home(props) {
       }
     ).catch(
       () => {
+        setLoading(false);
         alert('Error connecting to the API')
       }
     );
@@ -278,6 +288,7 @@ function Home(props) {
 
   return (
     <Container maxWidth="lg" className={classes.root}>
+
       <Grid container justify="space-between">
 
         <Grid item>
@@ -313,6 +324,10 @@ function Home(props) {
 
       { (pageType === 'list') && (<Listings pageContent={pageContent} tabs={tabs} addNewPage={addNewPage} handleTabDelete={handleTabDelete} />)}
       { (pageType === 'text') && (<Text pageContent={pageContent} setPageContent={setPageContent} updatePageText={updatePageText} />)}
+
+      <Backdrop open={loading} onClick={() => setLoading(false)}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
 
       <Menu
         id="simple-menu"
